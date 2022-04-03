@@ -9,36 +9,52 @@ const { log } = require("console");
 const uri = `mongodb+srv://knowlet1:${qs.escape(
   process.env.password
 )}@cluster0.novld.mongodb.net/project1?retryWrites=true&w=majority`;
-class Classes {
-  name;
-  description;
-  instructor;
+class Appointments {
+  date;
+  timeSlot;
+  physician;
+  patient;
+  note;
 
-  constructor(name, description, instructor) {
-    this.name = name;
-    this.description = description;
-    this.instructor = instructor;
+  constructor(date, timeSlot, physician, patient) {
+    this.date = date;
+    this.timeSlot = timeSlot;
+    this.physician = physician;
+    this.patient = patient;
   }
 }
 const express = require("express");
 const bodyParser = require("body-parser");
-const cors=require("cors")
+const cors = require("cors");
 const port = 3001;
 const server = express();
 server.use(bodyParser.json());
-server.use(cors())
+server.use(cors());
 server
   .get("/api/", async (req, res) => {
     try {
-      const collection = client.db("Project1").collection("Classes");
-      const { id } = req.query;
-      if (id) {
-        const myClass = await collection.findOne({ _id: new ObjectId(id) });
-        res.status(200).send(myClass);
+      const collection = client.db("Project-2").collection("Appointments");
+      const { from, to } = req.query;
+      if (from && to) {
+        const cursor = collection.find({
+          date: { $lt: new Date(to), $gte: new Date(from) },
+        });
+        const values = await cursor.toArray();
+        res.status(200).send(values);
       } else {
         const cursor = collection.find({});
         const values = await cursor.toArray();
-        res.status(200).send(values);
+        const filtered = values.filter((itm, idx) => {
+          console.log(
+            itm.date.toLocaleString("default", { month: "short" }) ===
+              new Date().toLocaleString("default", { month: "short" })
+          );
+          return (
+            itm.date.toLocaleString("default", { month: "short" }) ===
+            new Date().toLocaleString("default", { month: "short" })
+          );
+        });
+        res.status(200).send(filtered);
       }
     } catch (error) {
       res.status(500).send(error.message);

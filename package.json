@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "concurrently \"node index.js\" \"cd website/ && npm run start\" "
-  },  
+    "start": "concurrently \"node index.js\" \"cd website/ && npm run start\" ",
+     "serve": "nodemon index.js"
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {
