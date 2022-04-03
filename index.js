@@ -62,12 +62,28 @@ server
   })
   .post("/api/", async (req, res) => {
     try {
-      const { name, description, instructor } = req.body;
-      const collection = client.db("Project1").collection("Classes");
-      console.log(req.body, name, description, instructor);
-      if (name && description && instructor) {
-        const myClass = new Classes(name, description, instructor);
-        const result = await collection.insertOne(myClass);
+      const { date, timeSlot, physician, patient, note } = req.body;
+      const collection = client.db("Project-2").collection("Appointment");
+      if ((date, timeSlot, physician, patient)) {
+        const timeSlotAvailable = await collection.findOne({
+          date: new Date(date),
+          //timeSlot: {
+         //   $ne: timeSlot,
+        //  },
+        });
+        console.log(timeSlotAvailable);
+        if (timeSlotAvailable) {
+          console.log(true);
+        } else {
+          console.log(false);
+        }
+        const myAppointment = new Appointments(
+          date,
+          timeSlot,
+          physician,
+          patient
+        );
+        // const result = await collection.insertOne(myAppointment);
         console.log(result);
         res.status(201).send(`${result} created`);
       } else {
