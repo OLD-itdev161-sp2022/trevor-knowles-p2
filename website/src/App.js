@@ -97,37 +97,12 @@ function App() {
 
   return (
     <div className="App">
-      <select onChange={selectClass}>
-        {myClasses.map(({ name, _id }, id) => (
-          <option key={id} value={_id}>
-            {name}
-          </option>
-        ))}
-      </select>
-      <br />
-      <input
-        value={name}
-        placeholder="name"
-        type="text"
-        onChange={(e) => setName(e.target.value)}
-      />
-      <br />
-      <input
-        value={description}
-        placeholder="description"
-        type="text"
-        onChange={(e) => setDescription(e.target.value)}
-      />
-      <br />
-      <input
-        value={instructor}
-        placeholder="instructor"
-        type="text"
-        onChange={(e) => setInstructor(e.target.value)}
-      />
-      <br />
-      <button onClick={saveUpdateClass}>save/update</button>
-      <button onClick={deleteClass}>delete</button>
+      <div className="calender">
+      </div>
+      <div className="timeslots">
+      </div>
+      <div className="details">
+      </div>
     </div>
   );
 }

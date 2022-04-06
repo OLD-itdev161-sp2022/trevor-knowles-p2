@@ -65,25 +65,25 @@ server
       const { date, timeSlot, physician, patient, note } = req.body;
       const collection = client.db("Project-2").collection("Appointment");
       if ((date, timeSlot, physician, patient)) {
-        const timeSlotAvailable = await collection.findOne({
-          date: new Date(date),
-          //timeSlot: {
-         //   $ne: timeSlot,
-        //  },
-        });
-        console.log(timeSlotAvailable);
-        if (timeSlotAvailable) {
-          console.log(true);
-        } else {
-          console.log(false);
-        }
+        // const timeSlotAvailable = await collection.findOne({
+        //   date: new Date(date),
+        //   //timeSlot: {
+        //  //   $ne: timeSlot,
+        // //  },
+        // });
+        // console.log(timeSlotAvailable);
+        // if (timeSlotAvailable) {
+        //   console.log(true);
+        // } else {
+        //   console.log(false);
+        // }
         const myAppointment = new Appointments(
           date,
           timeSlot,
           physician,
           patient
         );
-        // const result = await collection.insertOne(myAppointment);
+        const result = await collection.insertOne(myAppointment);
         console.log(result);
         res.status(201).send(`${result} created`);
       } else {
@@ -94,34 +94,42 @@ server
     }
   })
   .put("/api/:id", (req, res) => {
-    const collection = client.db("Project1").collection("Classes");
+    const collection = client.db("Project-2").collection("Appointment");
     const { id } = req.params;
-    const { name, description, instructor } = req.body;
+    const { date, timeSlot, physician, patient, note } = req.body;
     collection
       .findOne({ _id: new ObjectId(id) })
       .then((result) => {
         if (result) {
           const update = {};
-          if (name) {
-            update.name = name;
+          if (date) {
+            update.date = date;
           }
-          if (description) {
-            update.description = description;
+          if (timeSlot) {
+            update.timeSlot = timeSlot;
           }
-          if (instructor) {
-            update.instructor = instructor;
+          if (physician) {
+            update.physician = physician;
           }
+          if (patient) {
+            update.patient = patient;
+          }
+          if (note) {
+            update.note = note;
+          }
+          
           collection
             .updateOne({ _id: new ObjectId(id) }, { $set: update })
             .then((result) => res.status(200).send(`${id} updated`));
         }
+        res.status(404).send(`${id} notfound`);
       })
       .catch((error) => {
         res.status(500).send(`${id} notFound`);
       });
   })
   .delete("/api/:id", (req, res) => {
-    const collection = client.db("Project1").collection("Classes");
+    const collection = client.db("Project-2").collection("Appointment");
     const { id } = req.params;
     collection
       .deleteOne({ _id: new ObjectId(id) })
