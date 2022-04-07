@@ -63,7 +63,8 @@ server
   .post("/api/", async (req, res) => {
     try {
       const { date, timeSlot, physician, patient, note } = req.body;
-      const collection = client.db("Project-2").collection("Appointment");
+      console.log(req.body)
+      const collection = client.db("Project-2").collection("Appointments");
       if ((date, timeSlot, physician, patient)) {
         // const timeSlotAvailable = await collection.findOne({
         //   date: new Date(date),
@@ -83,6 +84,7 @@ server
           physician,
           patient
         );
+        myAppointment.note = note
         const result = await collection.insertOne(myAppointment);
         console.log(result);
         res.status(201).send(`${result} created`);
@@ -94,7 +96,7 @@ server
     }
   })
   .put("/api/:id", (req, res) => {
-    const collection = client.db("Project-2").collection("Appointment");
+    const collection = client.db("Project-2").collection("Appointments");
     const { id } = req.params;
     const { date, timeSlot, physician, patient, note } = req.body;
     collection
@@ -120,7 +122,9 @@ server
           
           collection
             .updateOne({ _id: new ObjectId(id) }, { $set: update })
-            .then((result) => res.status(200).send(`${id} updated`));
+            .then((result) =>{
+              res.status(200).send(`${id} updated`)} );
+            return
         }
         res.status(404).send(`${id} notfound`);
       })
@@ -129,7 +133,7 @@ server
       });
   })
   .delete("/api/:id", (req, res) => {
-    const collection = client.db("Project-2").collection("Appointment");
+    const collection = client.db("Project-2").collection("Appointments");
     const { id } = req.params;
     collection
       .deleteOne({ _id: new ObjectId(id) })

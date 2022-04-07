@@ -36,3 +36,39 @@
     transform: rotate(360deg);
   }
 }
+.container{
+  display:grid ;
+    grid-template-columns:50% 25% 25% ;
+    margin: 1em;
+    gap: 5px;border: 1px solid black;
+    padding: 1em;
+}
+
+.calender{
+  display: grid;
+  grid-template-columns: repeat(7,1fr);
+  grid-template-rows:repeat(4, 50px);
+
+}
+
+.calender div{
+  border: 1px solid black;
+}
+.timeslots{
+display: grid;
+grid-template-columns: 1fr;
+grid-template-rows: repeat(8,minmax(25px, auto));
+
+}
+.timeslots>div{
+  border: 1px solid black;
+}
+
+.detail{
+display: grid;
+grid-template-columns: 1fr;
+
+}
+.detail div{
+  border: 1px solid black;
+}
