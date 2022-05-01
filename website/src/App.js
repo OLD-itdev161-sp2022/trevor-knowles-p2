@@ -2,14 +2,12 @@ import logo from "./logo.svg";
 import "./App.css";
 import { useState, useEffect } from "react";
 
-const CalendarGrid = ({ date, isBlank, handleDate }) => {
+const CalendarGrid = ({ date, handleDate }) => {
   return (
     <>
-      {isBlank ? (
-        <div>{isBlank ? "" : date}</div>
-      ) : (
-        <div onClick={handleDate}>{isBlank ? "" : date}</div>
-      )}
+      <div onClick={handleDate} style={{ fontSize: ".25em" }}>
+        {date}
+      </div>
     </>
   );
 };
@@ -32,14 +30,14 @@ function App() {
     timeSlots: "2",
     note: "test",
   };
+
   const URL = "http://localhost:3001/api/";
   const [id, setId] = useState(null);
   const [appointments, setAppointments] = useState([test]);
   const [appointmentsByDay, setAppointmentsByDay] = useState(null);
   const [date, setDate] = useState(null);
   const [date2, setDate2] = useState(new Date().getUTCDate());
-  const [newApp, setNewApp] = useState({});
-  const [timeSlotSelected, setTimeSlot] = useState(null);
+  const [timeSlotSelected, setTimeSlot] = useState("1");
   const [physician, setPhysician] = useState("");
   const [patient, setPatient] = useState("");
   const [note, setNote] = useState("");
@@ -47,13 +45,7 @@ function App() {
   const generateAppointmentsByDay = (appointments) => {
     const filter = {};
     for (const item of appointments) {
-      if (
-        filter.hasOwnProperty(
-          new Date(
-            item.date.includes("t") ? item.date.split("t")[0] : item.date
-          ).getDate()
-        )
-      ) {
+      if (filter.hasOwnProperty(new Date(item.date).getDate())) {
         filter[new Date(item.date).getDate()].push(item);
       } else {
         filter[new Date(item.date).getDate()] = [item];
@@ -63,13 +55,16 @@ function App() {
   };
 
   const generateCalenderGridView = (days) => {
-    return new Array(days).fill(null).map((itm, idx) => {
-      const isBlank = !appointmentsByDay.hasOwnProperty(`${idx + 1}`);
+    return new Array(days).fill(null).map((_, idx) => {
+      let date = idx + 1;
+      if (appointmentsByDay.hasOwnProperty(`${idx + 1}`)) {
+        date = appointmentsByDay[idx + 1][0].date;
+      }
+
       return (
         <CalendarGrid
           key={`${idx}-calendergrid`}
-          date={!isBlank ? appointmentsByDay[idx + 1][0].date : ""}
-          isBlank={isBlank}
+          date={date}
           handleDate={handleSelectDate(idx + 1)}
         />
       );
@@ -84,7 +79,12 @@ function App() {
     if (timeslot === -1) {
       setId(-1);
     } else {
-      setId(appointmentsByDay[date][timeslot]._id);
+      setId(
+        appointmentsByDay[date].filter((itm) => {
+          return itm.timeSlot === `${timeslot}`;
+        })[0]._id
+      );
+      setTimeSlot(timeslot);
     }
   };
 
@@ -93,21 +93,31 @@ function App() {
       return "";
     }
 
-    const listedtimeSlots = appointmentsByDay[date].map(({ timeSlot }) => {
-      return timeSlot;
-    });
+    let listedtimeSlots = null;
 
-    console.log(appointmentsByDay[date], listedtimeSlots);
+    if (appointmentsByDay.hasOwnProperty(date)) {
+      listedtimeSlots = appointmentsByDay[date]
+        .map(({ timeSlot }) => {
+          return timeSlot;
+        })
+        .sort();
+    }
+
     return new Array(8).fill(null).map((itm, idx) => {
-      if (listedtimeSlots.includes(`${idx + 1}`)) {
-        //const { physician, patient } = appointmentsByDay[date][idx + 1];
+      if (listedtimeSlots && listedtimeSlots.includes(`${idx + 1}`)) {
+        const [{ physician, patient }] = appointmentsByDay[date].filter(
+          (itm, idxInner) => {
+            return itm.timeSlot === `${idx + 1}`;
+          }
+        );
+
         return (
           <TimeSlotList
             key={`${idx}-calendergrid`}
             timeSlot={idx + 1}
-            physician={"physician"}
-            patient={"patient"}
-            handleTimeSlot={handleSelectTimeSlot(date, idx)}
+            physician={physician}
+            patient={patient}
+            handleTimeSlot={handleSelectTimeSlot(date, idx + 1)}
           />
         );
       } else {
@@ -132,8 +142,25 @@ function App() {
     deleteAppointments();
   };
 
+  const generateSelectOptions = () => {
+    return new Array(8)
+      .fill(null)
+      .map((itm, idx) => `${idx + 1}`)
+      .filter((itm, idx) => {
+        if (appointmentsByDay.hasOwnProperty(date)) {
+          return !appointmentsByDay[date]
+            .map((itm) => {
+              return itm.timeSlot;
+            })
+            .includes(`${itm}`);
+        } else {
+          return true;
+        }
+      })
+      .map((itm, idx) => <option key={`${idx}-options`}>{itm}</option>);
+  };
+
   const timeSlot = () => {
-    console.log(id);
     if (id === -1) {
       return (
         <div>
@@ -151,21 +178,7 @@ function App() {
             onChange={(e) => setDate2(e.target.value)}
           />
           <select onChange={(e) => setTimeSlot(e.target.value)}>
-            {new Array(8)
-              .fill(null)
-              .map((itm, idx) => `${idx + 1}`)
-              .filter(
-                (itm, idx) =>
-                  !appointmentsByDay[date]
-                    .map((itm) => {
-                      return itm.timeSlot;
-                    })
-                    .includes(`${itm}`)
-              )
-              .map((itm, idx) => (
-                <option key={`${idx}-options`}>{itm}</option>
-              ))}
-            <option>{timeSlot}</option>
+            {generateSelectOptions()}
           </select>
           <textarea onChange={(e) => setNote(e.target.value)}></textarea>
 
@@ -173,38 +186,47 @@ function App() {
         </div>
       );
     } else {
-      const [filteredApp] = appointmentsByDay[date].filter((itm, idx) => {
-        return itm._id === id;
-      });
-      const {
-        date: dateFromServer,
-        timeSlot,
-        physician,
-        patient,
-        note,
-      } = filteredApp;
+      const filteredApp = {
+        physician: "",
+        patient: "",
+        note: "",
+        timeSlot: "",
+        date: "",
+      };
+
+      let filtered = null;
+      if (appointmentsByDay[date]) {
+        filtered = appointmentsByDay[date].filter((itm, idx) => {
+          return itm._id === id;
+        });
+      }
+
+      if (filtered) {
+        Object.assign(filteredApp, filtered[0]);
+      }
+
       return (
         <div>
           <input
             placeholder="Physician"
-            defaultValue={physician}
+            defaultValue={filteredApp.physician}
             onChange={(e) => setPhysician(e.target.value)}
           />
           <input
             placeholder="Patient"
-            defaultValue={patient}
+            defaultValue={filteredApp.patient}
             onChange={(e) => setPatient(e.target.value)}
           />
           <input
             placeholder="Date"
-            defaultValue={dateFromServer}
+            defaultValue={filteredApp.date}
             onChange={(e) => setDate2(e.target.value)}
           />
           <select>
-            <option>{timeSlot}</option>
+            <option>{filteredApp.timeSlot}</option>
           </select>
           <textarea
-            defaultValue={note}
+            defaultValue={filteredApp.note}
             onChange={(e) => setNote(e.target.value)}
           ></textarea>
 
@@ -217,12 +239,13 @@ function App() {
 
   const cleanUp = () => {
     setId(null);
+    setTimeSlot("1");
   };
 
   const fetchAppointments = async () => {
     const res = await fetch(URL);
     const data = await res.json();
-    // setAppointments(data);
+    console.log(data);
     setAppointmentsByDay(generateAppointmentsByDay(data));
   };
 
@@ -263,7 +286,6 @@ function App() {
           Accept: "application/json, text/plain, */*",
           "Content-Type": "application/json",
         },
-
         body: JSON.stringify({
           patient,
           physician,
@@ -277,6 +299,7 @@ function App() {
       switch (res.status) {
         case 201:
           alert(data);
+          console.log(data);
           break;
         case 500:
           console.log(data);
@@ -284,19 +307,13 @@ function App() {
         default:
           console.log(res.status, "?");
       }
-      if (res.status === 201) {
-        alert(data);
-      }
     }
+    cleanUp();
   };
 
   useEffect(() => {
     fetchAppointments();
   }, []);
-
-  // useEffect(() => {
-  //   displayClass();
-  // }, [id]);
 
   return (
     <div className="App">

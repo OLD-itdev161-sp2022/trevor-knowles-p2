@@ -45,14 +45,16 @@ server
         const cursor = collection.find({});
         const values = await cursor.toArray();
         const filtered = values.filter((itm, idx) => {
-          console.log(
-            itm.date.toLocaleString("default", { month: "short" }) ===
-              new Date().toLocaleString("default", { month: "short" })
-          );
-          return (
-            itm.date.toLocaleString("default", { month: "short" }) ===
-            new Date().toLocaleString("default", { month: "short" })
-          );
+           if(itm.date){
+                        console.log(
+                          itm.date.split("-")[1],
+                          new Date().getMonth()
+                        );
+
+             return Number(itm.date.split("-")[1]) === new Date().getMonth()+1;
+           }else {
+             return false;
+           }
         });
         res.status(200).send(filtered);
       }
@@ -63,28 +65,16 @@ server
   .post("/api/", async (req, res) => {
     try {
       const { date, timeSlot, physician, patient, note } = req.body;
-      console.log(req.body)
+      console.log(req.body);
       const collection = client.db("Project-2").collection("Appointments");
       if ((date, timeSlot, physician, patient)) {
-        // const timeSlotAvailable = await collection.findOne({
-        //   date: new Date(date),
-        //   //timeSlot: {
-        //  //   $ne: timeSlot,
-        // //  },
-        // });
-        // console.log(timeSlotAvailable);
-        // if (timeSlotAvailable) {
-        //   console.log(true);
-        // } else {
-        //   console.log(false);
-        // }
         const myAppointment = new Appointments(
           date,
           timeSlot,
           physician,
           patient
         );
-        myAppointment.note = note
+        myAppointment.note = note;
         const result = await collection.insertOne(myAppointment);
         console.log(result);
         res.status(201).send(`${result} created`);
@@ -119,12 +109,13 @@ server
           if (note) {
             update.note = note;
           }
-          
+
           collection
             .updateOne({ _id: new ObjectId(id) }, { $set: update })
-            .then((result) =>{
-              res.status(200).send(`${id} updated`)} );
-            return
+            .then((result) => {
+              res.status(200).send(`${id} updated`);
+            });
+          return;
         }
         res.status(404).send(`${id} notfound`);
       })

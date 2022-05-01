@@ -36,39 +36,47 @@
     transform: rotate(360deg);
   }
 }
-.container{
-  display:grid ;
-    grid-template-columns:50% 25% 25% ;
-    margin: 1em;
-    gap: 5px;border: 1px solid black;
-    padding: 1em;
-}
-
-.calender{
+.container {
   display: grid;
-  grid-template-columns: repeat(7,1fr);
-  grid-template-rows:repeat(4, 50px);
-
-}
-
-.calender div{
+  grid-template-columns: 50% 25% 25%;
+  margin: 1em;
+  gap: 5px;
   border: 1px solid black;
+  padding: 1em;
 }
-.timeslots{
-display: grid;
-grid-template-columns: 1fr;
-grid-template-rows: repeat(8,minmax(25px, auto));
 
+.calender {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(50px, 1fr));
+  grid-template-rows: repeat(4, 50px);
+  gap: 5px;
 }
-.timeslots>div{
+
+.calender > div {
   border: 1px solid black;
+  height: 50px;
+}
+.timeslots {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: repeat(8, minmax(25px, auto));
+  gap: 5px;
 }
 
-.detail{
-display: grid;
-grid-template-columns: 1fr;
-
+.timeslots > div {
+  border: 1px solid black;
+  height: 50px;
 }
-.detail div{
+
+.timeslots > div > div {
+  font-size: .75em;
+}
+
+.detail {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.detail div {
   border: 1px solid black;
 }
