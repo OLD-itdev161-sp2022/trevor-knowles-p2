@@ -1,4 +1,3 @@
-import logo from "./logo.svg";
 import "./App.css";
 import { useState, useEffect } from "react";
 
@@ -22,18 +21,8 @@ const TimeSlotList = ({ timeSlot, patient, physician, handleTimeSlot }) => {
 };
 
 function App() {
-  const test = {
-    id: 1234,
-    date: "04-02-2022",
-    physician: "test",
-    patient: "test",
-    timeSlots: "2",
-    note: "test",
-  };
-
   const URL = "http://localhost:3001/api/";
   const [id, setId] = useState(null);
-  const [appointments, setAppointments] = useState([test]);
   const [appointmentsByDay, setAppointmentsByDay] = useState(null);
   const [date, setDate] = useState(null);
   const [date2, setDate2] = useState(new Date().getUTCDate());
@@ -43,14 +32,17 @@ function App() {
   const [note, setNote] = useState("");
 
   const generateAppointmentsByDay = (appointments) => {
+    console.log(appointments);
     const filter = {};
     for (const item of appointments) {
-      if (filter.hasOwnProperty(new Date(item.date).getDate())) {
-        filter[new Date(item.date).getDate()].push(item);
+      const day = Number(item.date.split("-")[2]);
+      if (filter.hasOwnProperty(day)) {
+        filter[day].push(item);
       } else {
-        filter[new Date(item.date).getDate()] = [item];
+        filter[day] = [item];
       }
     }
+    console.log(filter);
     return filter;
   };
 
@@ -300,6 +292,7 @@ function App() {
         case 201:
           alert(data);
           console.log(data);
+          fetchAppointments()
           break;
         case 500:
           console.log(data);
